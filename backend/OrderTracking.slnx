@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OrderTracking.API/OrderTracking.API.csproj" />
+    <Project Path="src/OrderTracking.Application/OrderTracking.Application.csproj" />
+    <Project Path="src/OrderTracking.Domain/OrderTracking.Domain.csproj" />
+    <Project Path="src/OrderTracking.Infrastructure/OrderTracking.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OrderTracking.IntegrationTests/OrderTracking.IntegrationTests.csproj" />
+    <Project Path="tests/OrderTracking.UnitTests/OrderTracking.UnitTests.csproj" />
+  </Folder>
+</Solution>
