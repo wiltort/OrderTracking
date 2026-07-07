@@ -102,17 +102,9 @@ namespace OrderTracking.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                var command = new UpdateOrderStatusCommand(id, request.Status);
-                var order = await _mediator.Send(command);
-                return Ok(order);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "Invalid operation while updating order {OrderId}", id);
-                return BadRequest(ex.Message);
-            }
+            var command = new UpdateOrderStatusCommand(id, request.Status);
+            var order = await _mediator.Send(command);
+            return Ok(order);
         }
     }
 }

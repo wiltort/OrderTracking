@@ -2,7 +2,7 @@ using System;
 
 namespace OrderTracking.Domain.Exceptions
 {
-    public class OrderNotFoundException : Exception
+    public class OrderNotFoundException : DomainException
     {
         public Guid OrderId { get; }
 
@@ -16,5 +16,9 @@ namespace OrderTracking.Domain.Exceptions
             : base(message, innerException)
         {
         }
+
+        public override int StatusCode => 404;
+
+        public override string ErrorCode => "ORDER_NOT_FOUND";
     }
 }

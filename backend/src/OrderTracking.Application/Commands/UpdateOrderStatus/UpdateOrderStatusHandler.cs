@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using OrderTracking.Application.DTOs;
 using OrderTracking.Domain.Entities;
 using OrderTracking.Domain.Enums;
+using OrderTracking.Domain.Exceptions;
 using OrderTracking.Domain.Interfaces;
 using OrderTracking.Application.Events;
 
@@ -35,7 +36,7 @@ namespace OrderTracking.Application.Commands.UpdateOrderStatus
                 if (order == null)
                 {
                     _logger.LogWarning("Order {OrderId} not found", request.OrderId);
-                    throw new InvalidOperationException($"Order with ID {request.OrderId} not found");
+                    throw new OrderNotFoundException(request.OrderId);
                 }
 
                 var newStatus = Enum.Parse<OrderStatus>(request.Status);

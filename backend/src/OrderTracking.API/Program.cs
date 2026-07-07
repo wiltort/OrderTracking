@@ -3,11 +3,11 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OrderTracking.API.Middleware;
 using OrderTracking.API.Services;
 using OrderTracking.Application.Commands.CreateOrder;
 using OrderTracking.Application.Interfaces;
 using OrderTracking.Application.Mappings;
-using OrderTracking.Domain.Exceptions;
 using OrderTracking.Domain.Interfaces;
 using OrderTracking.Infrastructure.Data;
 using OrderTracking.Infrastructure.Messaging.Kafka;
@@ -71,7 +71,8 @@ try
     builder.Services.AddOpenTelemetry()
         .ConfigureResource(resource => resource.AddService("order-tracking-api"))
         .WithTracing(tracing => tracing
-            .AddAspNetCoreInstrumentation());
+            .AddAspNetCoreInstrumentation()
+            .AddConsoleExporter());
 
     // Controllers
     builder.Services.AddControllers();
@@ -83,18 +84,7 @@ try
     var app = builder.Build();
 
     // Exception handling middleware
-    app.Use(async (context, next) =>
-    {
-        try
-        {
-            await next();
-        }
-        catch (OrderNotFoundException ex)
-        {
-            context.Response.StatusCode = 404;
-            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
-        }
-    });
+    app.UseMiddleware<ExceptionHandlingMiddleware>();
 
     // Pipeline
     if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
