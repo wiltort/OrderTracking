@@ -89,6 +89,19 @@ services:
     networks:
       - order-tracking-network
 
+  # Фронтенд (React + Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: order-tracking-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    networks:
+      - order-tracking-network
+
   # Adminer - веб-интерфейс для PostgreSQL
   adminer:
     image: adminer:latest

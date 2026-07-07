@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -45,6 +46,9 @@ public class KafkaConsumerService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Kafka consumer service started");
+
+        // Ensure the topic exists before subscribing
+        await EnsureTopicExistsAsync(stoppingToken);
 
         _consumer.Subscribe(_config.DefaultTopic);
 
@@ -174,6 +178,86 @@ public class KafkaConsumerService : BackgroundService
         }
 
         _logger.LogInformation("New order notification sent for {OrderNumber}", @event.OrderNumber);
+    }
+
+    /// <summary>
+    /// Ensures the configured Kafka topic exists. If it doesn't, creates it.
+    /// Retries with backoff until Kafka is available or cancellation is requested.
+    /// </summary>
+    private async Task EnsureTopicExistsAsync(CancellationToken cancellationToken)
+    {
+        var topicName = _config.DefaultTopic;
+        var maxRetries = 10;
+        var retryDelayMs = 3000;
+
+        using var adminClient = new AdminClientBuilder(new AdminClientConfig
+        {
+            BootstrapServers = _config.BootstrapServers,
+            ClientId = "order-tracking-admin"
+        }).Build();
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            try
+            {
+                var metadata = adminClient.GetMetadata(topicName, TimeSpan.FromSeconds(5));
+
+                var topicExists = metadata.Topics
+                    .Any(t => t.Topic == topicName && t.Error.Code == ErrorCode.NoError);
+
+                if (topicExists)
+                {
+                    _logger.LogInformation("Kafka topic '{Topic}' already exists", topicName);
+                    return;
+                }
+
+                // Topic doesn't exist — create it
+                _logger.LogInformation(
+                    "Kafka topic '{Topic}' not found, creating it (attempt {Attempt}/{MaxRetries})",
+                    topicName, attempt, maxRetries);
+
+                await adminClient.CreateTopicsAsync(
+                [
+                    new TopicSpecification
+                    {
+                        Name = topicName,
+                        NumPartitions = 1,
+                        ReplicationFactor = 1
+                    }
+                ], new CreateTopicsOptions { RequestTimeout = TimeSpan.FromSeconds(10) });
+
+                _logger.LogInformation("Kafka topic '{Topic}' created successfully", topicName);
+                return;
+            }
+            catch (CreateTopicsException ex) when (
+                ex.Error.Code == ErrorCode.TopicAlreadyExists ||
+                ex.Results?.Any(r => r.Error.Code == ErrorCode.TopicAlreadyExists) == true)
+            {
+                _logger.LogInformation("Kafka topic '{Topic}' already exists (race condition)", topicName);
+                return;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Failed to verify/create Kafka topic '{Topic}' (attempt {Attempt}/{MaxRetries}), retrying in {Delay}ms",
+                    topicName, attempt, maxRetries, retryDelayMs);
+
+                if (attempt == maxRetries)
+                {
+                    _logger.LogError(
+                        ex,
+                        "Could not create Kafka topic '{Topic}' after {MaxRetries} attempts. Consumer will attempt to subscribe anyway.",
+                        topicName, maxRetries);
+                    return;
+                }
+
+                await Task.Delay(retryDelayMs, cancellationToken);
+            }
+        }
     }
 
     public override void Dispose()

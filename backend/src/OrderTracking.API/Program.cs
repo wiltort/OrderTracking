@@ -81,6 +81,19 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
+    // CORS
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAll",
+            corsPolicyBuilder =>
+        {
+            corsPolicyBuilder.WithOrigins("http://localhost:3000")
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials();
+        });
+    });
+
     var app = builder.Build();
 
     // Exception handling middleware
@@ -95,7 +108,10 @@ try
 
     app.UseHttpsRedirection();
 
+    app.UseCors("AllowAll");
+
     app.MapControllers();
+    app.MapHub<OrderTracking.API.Hubs.OrderHub>("/hubs/order");
 
     app.Run();
 }

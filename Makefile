@@ -40,6 +40,7 @@ up:
 	docker-compose up -d
 	@echo "$(GREEN)All services started!$(NC)"
 	@echo "$(BLUE)Access to services:$(NC)"
+	@echo "  Frontend:     http://localhost:3000"
 	@echo "  Backend API:  http://localhost:5000"
 	@echo "  Swagger UI:   http://localhost:5000/swagger"
 	@echo "  Adminer DB:   http://localhost:8080"
