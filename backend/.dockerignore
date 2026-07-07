@@ -1,0 +1,30 @@
+# Binaries
+**/bin/
+**/obj/
+**/TestResults/
+
+# Logs
+**/logs/
+*.log
+
+# IDE
+**/.vs/
+**/.vscode/
+**/.idea/
+*.user
+*.suo
+
+# Git
+.git/
+.gitignore
+README.md
+
+# Docker
+Dockerfile
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
