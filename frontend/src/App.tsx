@@ -4,10 +4,16 @@ import { OrdersPage } from './pages/OrdersPage';
 import { CreateOrderPage } from './pages/CreateOrderPage';
 import { OrderDetailPage } from './pages/OrderDetailPage';
 import { useSignalR } from './hooks/useSignalR';
+import { useSignalROrderUpdates } from './hooks/useSignalROrderUpdates';
 import './styles/App.css';
 
 function AppContent() {
     const { isConnected } = useSignalR();
+
+    // Глобальная подписка на real-time обновления заказов через SignalR.
+    // Живёт всё время, пока открыто приложение, чтобы обработчики
+    // OrderStatusChanged / NewOrderCreated не терялись при переходах между страницами.
+    useSignalROrderUpdates();
 
     return (
         <div className="min-h-screen bg-gray-50">

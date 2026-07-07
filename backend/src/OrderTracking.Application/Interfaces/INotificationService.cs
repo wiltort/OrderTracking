@@ -13,6 +13,14 @@ public interface INotificationService
         DateTime updatedAt,
         CancellationToken cancellationToken = default);
 
+    Task NotifyOrderStatusChangedWithOldStatusAsync(
+        Guid orderId,
+        string orderNumber,
+        string oldStatus,
+        string newStatus,
+        DateTime updatedAt,
+        CancellationToken cancellationToken = default);
+
     Task NotifyNewOrderCreatedAsync(
         Guid orderId,
         string orderNumber,

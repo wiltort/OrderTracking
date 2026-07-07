@@ -147,9 +147,10 @@ public class KafkaConsumerService : BackgroundService
         {
             var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
-            await notificationService.NotifyOrderStatusChangedAsync(
+            await notificationService.NotifyOrderStatusChangedWithOldStatusAsync(
                 @event.OrderId,
                 @event.OrderNumber,
+                @event.OldStatus,
                 @event.NewStatus,
                 @event.UpdatedAt,
                 cancellationToken);

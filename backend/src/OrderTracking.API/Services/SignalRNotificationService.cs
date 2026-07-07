@@ -44,6 +44,31 @@ public class SignalRNotificationService : INotificationService
             cancellationToken);
     }
 
+    public async Task NotifyOrderStatusChangedWithOldStatusAsync(
+        Guid orderId,
+        string orderNumber,
+        string oldStatus,
+        string newStatus,
+        DateTime updatedAt,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Sending SignalR notification: Order {OrderNumber} status changed from {OldStatus} to {NewStatus}",
+            orderNumber, oldStatus, newStatus);
+
+        await _hubContext.Clients.All.SendAsync(
+            "OrderStatusChanged",
+            new
+            {
+                OrderId = orderId,
+                OrderNumber = orderNumber,
+                OldStatus = oldStatus,
+                NewStatus = newStatus,
+                UpdatedAt = updatedAt
+            },
+            cancellationToken);
+    }
+
     public async Task NotifyNewOrderCreatedAsync(
         Guid orderId,
         string orderNumber,
