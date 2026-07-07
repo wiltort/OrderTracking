@@ -1,15 +1,12 @@
-using System.Linq;
 using Confluent.Kafka;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OrderTracking.API.Services;
 using OrderTracking.Application.Commands.CreateOrder;
-using OrderTracking.Application.Commands.UpdateOrderStatus;
-using OrderTracking.Application.DTOs;
+using OrderTracking.Application.Interfaces;
 using OrderTracking.Application.Mappings;
-using OrderTracking.Application.Queries.GetOrderById;
-using OrderTracking.Application.Queries.GetOrders;
 using OrderTracking.Domain.Exceptions;
 using OrderTracking.Domain.Interfaces;
 using OrderTracking.Infrastructure.Data;
@@ -17,34 +14,34 @@ using OrderTracking.Infrastructure.Messaging.Kafka;
 using OrderTracking.Infrastructure.Repositories;
 using Serilog;
 
+var builder = WebApplication.CreateBuilder(args);
+
+// Serilog
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(WebApplication.CreateBuilder(args).Configuration)
+    .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger();
+
+builder.Host.UseSerilog((context, configuration) =>
+{
+    if (!context.HostingEnvironment.IsDevelopment())
+    {
+        configuration
+            .ReadFrom.Configuration(context.Configuration)
+            .Enrich.WithProperty("ApplicationName", context.HostingEnvironment.ApplicationName)
+            .WriteTo.Console()
+            .WriteTo.File("logs/order-tracking-.txt", rollingInterval: RollingInterval.Day);
+    }
+    else
+    {
+        configuration
+            .WriteTo.Console();
+    }
+});
+
+Log.Information("Starting OrderTracking API");
 
 try
 {
-    Log.Information("Starting OrderTracking API");
-
-    var builder = WebApplication.CreateBuilder(args);
-
-    // Serilog
-    builder.Host.UseSerilog((context, configuration) =>
-    {
-        if (!context.HostingEnvironment.IsDevelopment())
-        {
-            configuration
-                .ReadFrom.Configuration(context.Configuration)
-                .Enrich.WithProperty("ApplicationName", context.HostingEnvironment.ApplicationName)
-                .WriteTo.Console()
-                .WriteTo.File("logs/order-tracking-.txt", rollingInterval: RollingInterval.Day);
-        }
-        else
-        {
-            configuration
-                .WriteTo.Console();
-        }
-    });
-
     // EF Core + PostgreSQL
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(
@@ -55,6 +52,11 @@ try
     // Kafka
     builder.Services.Configure<KafkaConfig>(builder.Configuration.GetSection("Kafka"));
     builder.Services.AddSingleton<IEventPublisher, KafkaEventPublisher>();
+    builder.Services.AddHostedService<KafkaConsumerService>();
+
+    // SignalR
+    builder.Services.AddSignalR();
+    builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
 
     // Repositories
     builder.Services.AddScoped<IOrderRepository, OrderRepository>();
@@ -70,6 +72,9 @@ try
         .ConfigureResource(resource => resource.AddService("order-tracking-api"))
         .WithTracing(tracing => tracing
             .AddAspNetCoreInstrumentation());
+
+    // Controllers
+    builder.Services.AddControllers();
 
     // Swagger
     builder.Services.AddEndpointsApiExplorer();
@@ -100,60 +105,7 @@ try
 
     app.UseHttpsRedirection();
 
-    // === Endpoints ===
-
-    // Create order
-    app.MapPost("/orders", async (CreateOrderRequest request, IMediator mediator) =>
-    {
-        var command = new CreateOrderCommand(request.Description);
-        var result = await mediator.Send(command);
-        return Results.Created($"/orders/{result.Id}", result);
-    })
-    .WithName("CreateOrder")
-    .WithTags("Orders");
-
-    // Get all orders
-    app.MapGet("/orders", async (IMediator mediator) =>
-    {
-        var orders = await mediator.Send(new GetOrdersQuery());
-        return Results.Ok(orders);
-    })
-    .WithName("GetOrders")
-    .WithTags("Orders");
-
-    // Get order by ID
-    app.MapGet("/orders/{id}", async (Guid id, IMediator mediator) =>
-    {
-        var result = await mediator.Send(new GetOrderByIdQuery(id));
-        return result is null ? Results.NotFound() : Results.Ok(result);
-    })
-    .WithName("GetOrderById")
-    .WithTags("Orders");
-
-    // Update order status
-    app.MapPut("/orders/{id}/status", async (
-        Guid id,
-        UpdateOrderStatusRequest request,
-        IMediator mediator) =>
-    {
-        await mediator.Send(new UpdateOrderStatusCommand(id, request.Status));
-        return Results.NoContent();
-    })
-    .WithName("UpdateOrderStatus")
-    .WithTags("Orders");
-
-    // Delete order (soft delete via Cancelled status)
-    app.MapDelete("/orders/{id}", async (Guid id, IMediator mediator) =>
-    {
-        var order = await mediator.Send(new GetOrderByIdQuery(id));
-        if (order is null)
-            return Results.NotFound();
-
-        await mediator.Send(new UpdateOrderStatusCommand(id, "Cancelled"));
-        return Results.NoContent();
-    })
-    .WithName("DeleteOrder")
-    .WithTags("Orders");
+    app.MapControllers();
 
     app.Run();
 }

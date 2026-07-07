@@ -8,6 +8,7 @@ using OrderTracking.Application.DTOs;
 using OrderTracking.Domain.Entities;
 using OrderTracking.Domain.Enums;
 using OrderTracking.Domain.Interfaces;
+using OrderTracking.Application.Events;
 
 namespace OrderTracking.Application.Commands.UpdateOrderStatus
 {
@@ -62,14 +63,5 @@ namespace OrderTracking.Application.Commands.UpdateOrderStatus
                 throw;
             }
         }
-    }
-
-    public class OrderStatusChangedEvent
-    {
-        public Guid OrderId { get; set; }
-        public required string OrderNumber { get; set; }
-        public required string OldStatus { get; set; }
-        public required string NewStatus { get; set; }
-        public DateTime UpdatedAt { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using OrderTracking.Application.DTOs;
 using OrderTracking.Domain.Entities;
 using OrderTracking.Domain.Interfaces;
+using OrderTracking.Application.Events;
 
 namespace OrderTracking.Application.Commands.CreateOrder
 {
@@ -48,13 +49,5 @@ namespace OrderTracking.Application.Commands.CreateOrder
                 throw;
             }
         }
-    }
-
-    public class OrderCreatedEvent
-    {
-        public Guid OrderId { get; set; }
-        public required string OrderNumber { get; set; }
-        public required string Status { get; set; }
-        public DateTime CreatedAt { get; set; }
     }
 }
