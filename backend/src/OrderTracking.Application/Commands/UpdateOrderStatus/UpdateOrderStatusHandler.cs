@@ -38,7 +38,7 @@ namespace OrderTracking.Application.Commands.UpdateOrderStatus
                     _logger.LogWarning("Order {OrderId} not found", request.OrderId);
                     throw new OrderNotFoundException(request.OrderId);
                 }
-
+                string oldStatus = order.Status.ToString();
                 var newStatus = Enum.Parse<OrderStatus>(request.Status);
                 order.UpdateStatus(newStatus);
 
@@ -48,7 +48,7 @@ namespace OrderTracking.Application.Commands.UpdateOrderStatus
                 {
                     OrderId = updatedOrder.Id,
                     OrderNumber = updatedOrder.OrderNumber,
-                    OldStatus = order.Status.ToString(),
+                    OldStatus = oldStatus,
                     NewStatus = updatedOrder.Status.ToString(),
                     UpdatedAt = updatedOrder.UpdatedAt
                 });
