@@ -24,6 +24,7 @@ public interface INotificationService
     Task NotifyNewOrderCreatedAsync(
         Guid orderId,
         string orderNumber,
+        string description,
         string status,
         DateTime createdAt,
         CancellationToken cancellationToken = default);

@@ -15,6 +15,7 @@ namespace OrderTracking.Application.Events
     {
         public Guid OrderId { get; set; }
         public required string OrderNumber { get; set; }
+        public required string Description { get; set; }
         public required string Status { get; set; }
         public DateTime CreatedAt { get; set; }
     }

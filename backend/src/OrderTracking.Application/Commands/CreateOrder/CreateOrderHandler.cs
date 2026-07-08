@@ -35,6 +35,7 @@ namespace OrderTracking.Application.Commands.CreateOrder
                 {
                     OrderId = createdOrder.Id,
                     OrderNumber = createdOrder.OrderNumber,
+                    Description = createdOrder.Description,
                     Status = createdOrder.Status.ToString(),
                     CreatedAt = createdOrder.CreatedAt
                 });

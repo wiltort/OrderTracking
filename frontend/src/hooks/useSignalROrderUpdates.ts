@@ -43,13 +43,13 @@ export const useSignalROrderUpdates = () => {
         signalRService.onNewOrderCreated((event: NewOrderCreatedEvent) => {
             console.log('[SignalR] New order created:', event);
 
-            const { orderId, orderNumber, status, createdAt } = event;
+            const { orderId, orderNumber, description, status, createdAt } = event;
 
             // Создаём объект заказа из события
             const newOrder: Order = {
                 id: orderId,
                 orderNumber,
-                description: '', // описание не приходит в событии — подтянется при следующем refetch
+                description,
                 status,
                 createdAt,
                 updatedAt: createdAt,

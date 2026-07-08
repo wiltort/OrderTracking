@@ -173,6 +173,7 @@ public class KafkaConsumerService : BackgroundService
             await notificationService.NotifyNewOrderCreatedAsync(
                 @event.OrderId,
                 @event.OrderNumber,
+                @event.Description,
                 @event.Status,
                 @event.CreatedAt,
                 cancellationToken);
@@ -281,6 +282,7 @@ public class OrderCreatedEvent
 {
     public Guid OrderId { get; set; }
     public required string OrderNumber { get; set; }
+    public required string Description { get; set; }
     public required string Status { get; set; }
     public DateTime CreatedAt { get; set; }
 }

@@ -72,6 +72,7 @@ public class SignalRNotificationService : INotificationService
     public async Task NotifyNewOrderCreatedAsync(
         Guid orderId,
         string orderNumber,
+        string description,
         string status,
         DateTime createdAt,
         CancellationToken cancellationToken = default)
@@ -86,6 +87,7 @@ public class SignalRNotificationService : INotificationService
             {
                 OrderId = orderId,
                 OrderNumber = orderNumber,
+                Description = description,
                 Status = status,
                 CreatedAt = createdAt
             },

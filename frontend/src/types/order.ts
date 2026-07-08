@@ -28,10 +28,11 @@ export interface OrderStatusChangedEvent {
 }
 
 // Событие от SignalR: создание нового заказа
-// Бэкенд отправляет { OrderId, OrderNumber, Status, CreatedAt }
+// Бэкенд отправляет { OrderId, OrderNumber, Description, Status, CreatedAt }
 export interface NewOrderCreatedEvent {
     orderId: string;
     orderNumber: string;
+    description: string;
     status: OrderStatus;
     createdAt: string;
 }
