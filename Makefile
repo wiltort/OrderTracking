@@ -72,6 +72,10 @@ backend:
 	@echo "$(YELLOW)Running backend locally...$(NC)"
 	cd backend && dotnet run --project src/OrderTracking.API/OrderTracking.API.csproj
 
+frontend:
+	@echo "$(YELLOW)Running frontend locally...$(NC)"
+	cd frontend && npm install && npm run dev
+
 migrate:
 	@echo "$(YELLOW)Applying migrations...$(NC)"
 	cd backend && dotnet ef database update --project src/OrderTracking.API/OrderTracking.API.csproj
