@@ -12,10 +12,11 @@
 
 ```
 backend/
-  OrderTracking.API         - REST API + SignalR хабы
-  OrderTracking.Application - CQRS команды, запросы, DTO
-  OrderTracking.Domain      - Сущности, исключения, интерфейсы
-  OrderTracking.Infrastructure - EF Core, Kafka, репозитории
+  src/
+    OrderTracking.API         - REST API + SignalR хабы
+    OrderTracking.Application - CQRS команды, запросы, DTO
+    OrderTracking.Domain      - Сущности, исключения, интерфейсы
+    OrderTracking.Infrastructure - EF Core, Kafka, репозитории
 frontend/
   src/
     api/        - HTTP клиент, SignalR сервис
