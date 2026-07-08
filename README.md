@@ -28,6 +28,12 @@ frontend/
 ## Запуск
 
 ```bash
+# Первый запуск
+make init
+
+# Остановка
+make down
+
 # Вся инфраструктура
 make up
 
@@ -42,6 +48,9 @@ make migrate
 
 # Тесты
 make test
+
+# Информация по остальным командам
+make help
 ```
 
 ## API

@@ -24,6 +24,7 @@ help:
 	@echo "  $(BLUE)make migration$(NC)  - Create new migration"
 	@echo "  $(BLUE)make test$(NC)       - Run all tests"
 	@echo "  $(BLUE)make restore$(NC)    - Restore NuGet packages"
+	@echo "  $(BLUE)make frontend$(NC)	 - Run frontend locally"
 	@echo ""
 	@echo "$(YELLOW)Database utilities:$(NC)"
 	@echo "  $(BLUE)make db$(NC)         - Connect to PostgreSQL"
